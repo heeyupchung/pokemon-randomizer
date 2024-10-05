@@ -1,88 +1,77 @@
-import { Button, Select, Switch, MenuItem } from "@mui/material";
-import { useReducer, useState } from "react";
+import { Button, Select, Switch, MenuItem, FormGroup, FormControlLabel } from "@mui/material";
 import { teamSizeOptions, formatOptions, regionOptions, typeOptions, colorOptions } from "../variables/selectOptions";
-import { type } from "@testing-library/user-event/dist/type";
+import axios from 'axios';
 
-export default function RandomizerPanel() {
+export default function RandomizerPanel({state, dispatch}) {
 
   const randomInt = (min, max) => {
     return Math.floor(Math.random() * (max - min + 1) + min)
   }
 
   const fetchPokemon = () => {
-    fetch(`https://pokeapi.co/api/v2/pokemon/${randomInt(1, 493)}`)
-        .then(res => console.log(res.json()));
+    axios.all([
+      axios.get(`https://pokeapi.co/api/v2/pokemon/${randomInt(1, 493)}`),
+      axios.get(`https://pokeapi.co/api/v2/pokemon/${randomInt(1, 493)}`),
+      axios.get(`https://pokeapi.co/api/v2/pokemon/${randomInt(1, 493)}`),
+      axios.get(`https://pokeapi.co/api/v2/pokemon/${randomInt(1, 493)}`),
+      axios.get(`https://pokeapi.co/api/v2/pokemon/${randomInt(1, 493)}`),
+      axios.get(`https://pokeapi.co/api/v2/pokemon/${randomInt(1, 493)}`)
+    ])
+    .then(axios.spread((data1, data2, data3, data4, data5, data6) => {
+      console.log(
+        "data1", data1.data, 
+        "data2", data2.data, 
+        "data3", data3.data, 
+        "data4", data4.data, 
+        "data5", data5.data, 
+        "data6", data6.data
+      );
+      dispatch({type: "setTeam", team: [data1.data, data2.data, data3.data, data4.data, data5.data, data6.data]});
+    }));
   }
-
-  const reducer = (state, action) => {
-    switch(action.type) {
-      case "teamSize":
-        return { ...state, teamSize: action.teamSize }
-      case "formats":
-        return { ...state, formats: action.formats }
-      case "regions":
-        return { ...state, regions: action.regions }
-      case "types":
-        return { ...state, types: action.types }
-      case "colors":
-        return { ...state, colors: action.colors }
-      case "forms":
-        return { ...state, forms: action.forms }
-      case "nfes":
-        return { ...state, nfes: action.nfes }
-      default:
-        return state;
-    }
-  }
-
-  const [state, dispatch] = useReducer(reducer, {
-    teamSize: 6,
-    formats: "All Formats",
-    regions: "All Formats",
-    types: "All Types",
-    colors: "All Colors",
-    forms: "All Forms",
-    nfes: "All Evolutions",
-  });
 
   return <div className="randomizer-panel">
     <span>Generate</span>
     <span>
-      <Select defaultValue={6}>
+      <Select defaultValue={state.teamSize}>
         {teamSizeOptions.map(option => {
-          return <MenuItem value={option}>{option}</MenuItem>
+          return <MenuItem key={option} value={option}>{option}</MenuItem>
         })}
       </Select>
     </span>
     <span>Pokemon</span>
     <span>
-      <Select defaultValue={"All Formats"}>
+      <Select defaultValue={state.formats}>
           {formatOptions.map(option => {
-            return <MenuItem value={option}>{option}</MenuItem>
+            return <MenuItem key={option} value={option}>{option}</MenuItem>
           })}
       </Select>      
-      <Select defaultValue={"All Regions"}>
+      <Select defaultValue={state.regions}>
           {regionOptions.map(option => {
-            return <MenuItem value={option}>{option}</MenuItem>
+            return <MenuItem key={option} value={option}>{option}</MenuItem>
           })}
       </Select>      
-      <Select defaultValue={"All Types"}>
+      <Select defaultValue={state.types}>
           {typeOptions.map(option => {
-            return <MenuItem value={option}>{option}</MenuItem>
+            return <MenuItem key={option} value={option}>{option}</MenuItem>
           })}
       </Select>      
-      <Select defaultValue={"All Colors"}>
+      <Select defaultValue={state.colors}>
           {colorOptions.map(option => {
-            return <MenuItem value={option}>{option}</MenuItem>
+            return <MenuItem key={option} value={option}>{option}</MenuItem>
           })}
       </Select>
     </span>
     <span>
       <span>
-        <Switch label="Forms"/>
-        <Switch label="NFEs"/>
+        <FormGroup>
+          <FormControlLabel control={<Switch />} label="Forms" />
+        </FormGroup>
+        <FormGroup>
+          <FormControlLabel control={<Switch />} label="NFEs" />
+        </FormGroup>
       </span>
-      <Button label="generate" onClick={() => fetchPokemon()}/>
+      <Button variant="contained" onClick={() => fetchPokemon()}>Generate</Button>
     </span>
   </div>
 }
